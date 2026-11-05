@@ -1,0 +1,14 @@
+{
+  "name": "sala-de-cine",
+  "version": "1.0.0",
+  "description": "Simulador de compra de boletos de cine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "reset": "node -e \"for(const f of ['cine.db','cine.db-wal','cine.db-shm'])require('fs').rmSync(f,{force:true})\""
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^5.3.0"
+  }
+}

@@ -1,0 +1,14 @@
+# Dependencias (se regeneran con npm install)
+node_modules/
+
+# Base de datos SQLite y sus archivos auxiliares
+cine.db
+cine.db-wal
+cine.db-shm
+
+# Variables de entorno y archivos del sistema
+.env
+.DS_Store
+
+# Registros
+*.log

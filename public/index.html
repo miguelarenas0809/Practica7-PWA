@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2a0a12">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Sala de Cine · Boletos</title>
+<style>
+:root{
+  --fondo:#2a0a12; --panel:#3a1019; --linea:#5a1e2b; --texto:#f6e9d7; --suave:#c9a99a;
+  --libre:#a8283d; --libre-borde:#d4566b; --elegido:#ffbf3c; --vendido:#1d070c;
+  --ok:#8bd17c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fondo);color:var(--texto);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top) 0 calc(120px + env(safe-area-inset-bottom))}
+main{max-width:520px;margin:0 auto;padding:0 16px}
+h1{font:700 1.6rem/1.1 Georgia,"Times New Roman",serif;margin:20px 0 4px}
+.sub{color:var(--suave);margin:0 0 16px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tabs button,.chip{background:none;border:1px solid var(--linea);color:var(--texto);padding:8px 14px;border-radius:999px;font:inherit;cursor:pointer}
+.tabs button[aria-selected=true],.chip[aria-pressed=true]{background:var(--elegido);color:#2a0a12;border-color:var(--elegido);font-weight:600}
+.funciones{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px}
+.chip{white-space:nowrap;text-align:left;border-radius:12px}
+.chip small{display:block;opacity:.8}
+.pantalla{height:10px;margin:18px 8% 6px;border-radius:50% 50% 0 0/100% 100% 0 0;background:linear-gradient(#fff6dd,#ffbf3c);box-shadow:0 10px 40px 6px rgba(255,191,60,.35)}
+.lbl-pantalla{text-align:center;color:var(--suave);font-size:.8rem;margin-bottom:14px}
+.sala{display:flex;flex-direction:column;gap:6px}
+.fila{display:flex;align-items:center;gap:4px}
+.fila .id{width:18px;color:var(--suave);font-size:.8rem;text-align:center}
+.pasillo{flex:0 0 14px}
+.asiento{flex:1;aspect-ratio:1;min-width:0;border:2px solid var(--libre-borde);background:var(--libre);border-radius:10px 10px 4px 4px;color:#fff;font-size:.65rem;cursor:pointer;padding:0;transition:transform .12s}
+.asiento:active{transform:scale(.9)}
+.asiento:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.asiento.elegido{background:var(--elegido);border-color:#fff3c9;color:#2a0a12;font-weight:700;transform:translateY(-2px)}
+.asiento.vendido{background:var(--vendido);border-color:var(--linea);color:var(--linea);cursor:not-allowed}
+.asiento.vendido::after{content:"×"}
+.zona{display:flex;gap:14px;flex-wrap:wrap;margin:16px 0;font-size:.85rem;color:var(--suave)}
+.zona span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:2px solid}
+.l1::before{background:var(--libre);border-color:var(--libre-borde)}
+.l2::before{background:var(--elegido);border-color:#fff3c9}
+.l3::before{background:var(--vendido);border-color:var(--linea)}
+.precios{font-size:.85rem;color:var(--suave);margin:0}
+.barra{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--linea);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+.barra div{max-width:520px;margin:0 auto}
+.resumen{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:.95rem}
+.resumen b{color:var(--elegido)}
+.compra{display:flex;gap:8px}
+input{flex:1;min-width:0;background:var(--fondo);border:1px solid var(--linea);color:var(--texto);border-radius:10px;padding:10px 12px;font:inherit}
+.btn{background:var(--elegido);color:#2a0a12;border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.sec{background:none;color:var(--suave);border:1px solid var(--linea);font-weight:400}
+.boleto{background:var(--panel);border:1px dashed var(--suave);border-radius:14px;padding:14px 16px;margin-bottom:12px;position:relative}
+.boleto h3{margin:0 0 2px;font:700 1.1rem Georgia,serif}
+.boleto p{margin:2px 0;color:var(--suave);font-size:.9rem}
+.boleto .as{color:var(--elegido);font-weight:700;font-size:1.05rem}
+.vacio{color:var(--suave);padding:24px 0}
+.pie{display:flex;gap:8px;margin-top:20px}
+#toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-80px);background:var(--ok);color:#10300a;padding:10px 18px;border-radius:10px;font-weight:600;transition:transform .25s;z-index:9}
+#toast.on{transform:translate(-50%,0)}
+#toast.err{background:#ff8a80;color:#3a0a06}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.login{display:flex;flex-direction:column;gap:10px;background:var(--panel);border:1px solid var(--linea);border-radius:14px;padding:16px}
+#l-error{color:#ff8a80;margin:0;min-height:1.2em;font-size:.9rem}
+</style>
+</head>
+<body>
+<div id="toast" role="status"></div>
+<main>
+  <h1>Sala de Cine</h1>
+  <p class="sub" id="sub"></p>
+
+  <section id="v-login" class="login" hidden>
+    <input id="l-nombre" placeholder="Tu nombre" autocomplete="username" maxlength="40" aria-label="Nombre">
+    <input id="l-pin" placeholder="PIN de 4 dígitos" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" aria-label="PIN">
+    <p id="l-error" role="alert"></p>
+    <button class="btn" id="entrar">Entrar</button>
+    <p class="precios">Si el nombre es nuevo, se crea tu cuenta con ese PIN.</p>
+  </section>
+
+  <div class="tabs" id="tabs" role="tablist" hidden>
+    <button role="tab" id="t-comprar" aria-selected="true">Comprar</button>
+    <button role="tab" id="t-boletos" aria-selected="false">Mis boletos</button>
+  </div>
+
+  <section id="v-comprar" hidden>
+    <div class="funciones" id="funciones"></div>
+    <div class="pantalla"></div>
+    <div class="lbl-pantalla">Pantalla</div>
+    <div class="sala" id="sala"></div>
+    <div class="zona">
+      <span class="l1">Libre</span><span class="l2">Tu selección</span><span class="l3">Vendido</span>
+    </div>
+    <p class="precios">Filas A–C $70 · D–F $90 · G–H $110 (VIP)</p>
+    <p class="precios" id="conteo"></p>
+  </section>
+
+  <section id="v-boletos" hidden>
+    <div id="lista"></div>
+    <div class="pie">
+      <button class="btn sec" id="salir">Cerrar sesión</button>
+      <button class="btn sec" id="instalar" hidden>Instalar app</button>
+    </div>
+  </section>
+</main>
+
+<div class="barra" id="barra" hidden>
+  <div>
+    <div class="resumen"><span id="sel">Sin asientos elegidos</span><b id="total">$0</b></div>
+    <div class="compra">
+      <button class="btn" id="comprar" style="flex:1" disabled>Comprar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FILAS = 8, COLS = 10, PASILLO_DESPUES_DE = 5, LETRAS = "ABCDEFGH";
+const $ = s => document.querySelector(s);
+const nombreAsiento = (r, c) => LETRAS[r] + (c + 1);
+const precio = r => r < 3 ? 70 : r < 6 ? 90 : 110;   // solo para mostrar; el servidor calcula el total real
+
+let token = localStorage.getItem("token"), usuario = localStorage.getItem("usuario");
+let funciones = [], fid = null, matriz = [], vistaActual = "login";
+const sel = new Set();   // "fila-col"
+
+async function api(ruta, opts = {}) {
+  let r;
+  try {
+    r = await fetch("/api" + ruta, {
+      method: opts.method || "GET",
+      headers: {"Content-Type": "application/json", ...(token ? {Authorization: "Bearer " + token} : {})},
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+  } catch (e) { throw new Error("Sin conexión con el servidor."); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(d.error || "Error del servidor."), {status: r.status, datos: d});
+  return d;
+}
+function fallo(e) { e.status === 401 ? cerrarSesion() : aviso(e.message, true); }
+
+// ===== Render =====
+function pintarFunciones() {
+  $("#funciones").innerHTML = "";
+  funciones.forEach(f => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.setAttribute("aria-pressed", f.id === fid);
+    b.innerHTML = `${f.hora}<small></small>`;
+    b.querySelector("small").textContent = f.peli;
+    b.onclick = () => { fid = f.id; sel.clear(); matriz = []; pintarFunciones(); cargarSala(); };
+    $("#funciones").appendChild(b);
+  });
+}
+
+function pintarSala() {
+  const cont = $("#sala");
+  cont.innerHTML = "";
+  let libres = 0;
+  matriz.forEach((fila, r) => {
+    const el = document.createElement("div");
+    el.className = "fila";
+    el.innerHTML = `<span class="id">${LETRAS[r]}</span>`;
+    fila.forEach((ocupado, c) => {
+      if (c === PASILLO_DESPUES_DE) el.insertAdjacentHTML("beforeend", '<span class="pasillo"></span>');
+      const elegido = sel.has(r + "-" + c);
+      if (!ocupado) libres++;
+      const b = document.createElement("button");
+      b.className = "asiento" + (ocupado ? " vendido" : "") + (elegido ? " elegido" : "");
+      b.dataset.r = r; b.dataset.c = c;
+      b.disabled = !!ocupado;
+      b.textContent = ocupado ? "" : c + 1;
+      b.setAttribute("aria-label", `Asiento ${nombreAsiento(r, c)}, ${ocupado ? "vendido" : elegido ? "seleccionado" : "libre"}, $${precio(r)}`);
+      el.appendChild(b);
+    });
+    cont.appendChild(el);
+  });
+  $("#conteo").textContent = `${libres} libres · ${FILAS * COLS - libres} vendidos de ${FILAS * COLS}`;
+  pintarResumen();
+}
+
+function pintarResumen() {
+  const items = [...sel].map(k => k.split("-").map(Number)).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  $("#sel").textContent = items.length ? items.map(([r, c]) => nombreAsiento(r, c)).join(", ") : "Sin asientos elegidos";
+  $("#total").textContent = "$" + items.reduce((s, [r]) => s + precio(r), 0);
+  $("#comprar").disabled = !items.length;
+}
+
+async function cargarSala() {
+  if (fid == null) return;
+  try {
+    const {matriz: nueva} = await api(`/funciones/${fid}/asientos`);
+    const perdidos = [];   // asientos que yo tenía elegidos y alguien más compró
+    [...sel].forEach(k => {
+      const [r, c] = k.split("-").map(Number);
+      if (nueva[r][c]) { sel.delete(k); perdidos.push(nombreAsiento(r, c)); }
+    });
+    if (perdidos.length) aviso("Ya no disponible: " + perdidos.join(", "), true);
+    if (perdidos.length || JSON.stringify(nueva) !== JSON.stringify(matriz)) { matriz = nueva; pintarSala(); }
+  } catch (e) { fallo(e); }
+}
+
+async function cargarBoletos() {
+  const l = $("#lista");
+  try {
+    const {compras} = await api("/mis-compras");
+    if (!compras.length) { l.innerHTML = '<p class="vacio">Aún no tienes compras. Elige asientos en la pestaña Comprar.</p>'; return; }
+    l.innerHTML = "";
+    compras.forEach(c => {
+      const d = document.createElement("div");
+      d.className = "boleto";
+      d.innerHTML = `<h3></h3><p class="f"></p><p class="as"></p><p class="n"></p>`;
+      d.querySelector("h3").textContent = c.peli;
+      d.querySelector(".f").textContent = `Función ${c.hora} · Folio ${c.folio}`;
+      d.querySelector(".as").textContent = "Asientos: " + c.asientos.join(", ");
+      d.querySelector(".n").textContent = `Total $${c.total} · ${new Date(c.fecha).toLocaleString("es-MX")}`;
+      l.appendChild(d);
+    });
+  } catch (e) { fallo(e); }
+}
+
+// ===== Vistas y sesión =====
+function vista(v) {
+  vistaActual = v;
+  $("#v-login").hidden = v !== "login";
+  $("#v-comprar").hidden = v !== "comprar";
+  $("#v-boletos").hidden = v !== "boletos";
+  $("#barra").hidden = v !== "comprar";
+  $("#tabs").hidden = v === "login";
+  $("#t-comprar").setAttribute("aria-selected", v === "comprar");
+  $("#t-boletos").setAttribute("aria-selected", v === "boletos");
+  $("#sub").textContent = v === "login" ? "Entra para comprar tus boletos." : `Hola, ${usuario}. Elige tu función y tus asientos.`;
+  if (v === "comprar") cargarSala();
+  if (v === "boletos") cargarBoletos();
+}
+function cerrarSesion() {
+  token = usuario = null;
+  localStorage.removeItem("token"); localStorage.removeItem("usuario");
+  sel.clear(); vista("login");
+}
+
+$("#t-comprar").onclick = () => vista("comprar");
+$("#t-boletos").onclick = () => vista("boletos");
+$("#salir").onclick = cerrarSesion;
+$("#l-pin").addEventListener("keydown", e => { if (e.key === "Enter") $("#entrar").click(); });
+$("#entrar").onclick = async () => {
+  $("#l-error").textContent = "";
+  try {
+    const d = await api("/sesion", {method: "POST", body: {nombre: $("#l-nombre").value, pin: $("#l-pin").value}});
+    token = d.token; usuario = d.nombre;
+    localStorage.setItem("token", token); localStorage.setItem("usuario", usuario);
+    $("#l-pin").value = "";
+    vista("comprar");
+  } catch (e) { $("#l-error").textContent = e.message; }
+};
+
+$("#sala").addEventListener("click", e => {
+  const b = e.target.closest(".asiento");
+  if (!b || b.disabled) return;
+  const k = b.dataset.r + "-" + b.dataset.c;
+  sel.has(k) ? sel.delete(k) : sel.add(k);
+  pintarSala();
+});
+
+$("#comprar").onclick = async () => {
+  const asientos = [...sel].map(k => k.split("-").map(Number));
+  $("#comprar").disabled = true;
+  try {
+    const c = await api("/compras", {method: "POST", body: {funcionId: fid, asientos}});
+    sel.clear();
+    aviso("Compra realizada · folio " + c.folio);
+  } catch (e) {
+    if (e.status === 409) {
+      e.datos.ocupados.forEach(([r, c]) => sel.delete(r + "-" + c));
+      aviso("Alguien se te adelantó con un asiento. Revisa el mapa y elige otro.", true);
+    } else fallo(e);
+  }
+  matriz = [];   // fuerza repintar con lo que diga el servidor
+  await cargarSala(); pintarResumen();
+};
+
+let tt;
+function aviso(txt, err) {
+  const t = $("#toast"); t.textContent = txt; t.className = "on" + (err ? " err" : "");
+  clearTimeout(tt); tt = setTimeout(() => t.className = "", 3200);
+}
+
+// El mapa se refresca solo cada 3 s para ver las compras de otros clientes
+setInterval(() => { if (token && vistaActual === "comprar" && !document.hidden) cargarSala(); }, 3000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && vistaActual === "comprar") cargarSala(); });
+
+// ===== PWA =====
+let prompt_;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); prompt_ = e; $("#instalar").hidden = false; });
+$("#instalar").onclick = async () => { if (!prompt_) return; prompt_.prompt(); await prompt_.userChoice; prompt_ = null; $("#instalar").hidden = true; };
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+
+(async function iniciar() {
+  try {
+    funciones = (await api("/funciones")).funciones;
+    fid = funciones[0].id;
+    pintarFunciones();
+    token ? vista("comprar") : vista("login");
+  } catch (e) { vista("login"); aviso(e.message, true); setTimeout(iniciar, 3000); }
+})();
+</script>
+</body>
+</html>
