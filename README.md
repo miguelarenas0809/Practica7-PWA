@@ -25,7 +25,7 @@ Aplicación web progresiva (PWA) para simular la compra de boletos de una sala d
 ## Estructura del proyecto
 
 ```
-sala-terciopelo/
+practica7/
 ├── server.js                 # Servidor Express y API
 ├── package.json
 └── public/                   # Archivos de la PWA
