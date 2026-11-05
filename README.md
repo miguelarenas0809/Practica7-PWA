@@ -47,8 +47,6 @@ Al ejecutar el proyecto se generan además `node_modules/`, `package-lock.json` 
 ## Instalación y uso
 
 ```bash
-git clone https://github.com/TU_USUARIO/sala-terciopelo.git
-cd sala-terciopelo
 npm install
 npm start
 ```
